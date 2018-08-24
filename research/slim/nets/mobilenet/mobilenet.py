@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 import collections
 import contextlib
+import math
 import copy
 import os
 
@@ -59,7 +60,9 @@ def _fixed_padding(inputs, kernel_size, rate=1):
   return padded_inputs
 
 
-def _make_divisible(v, divisor, min_value=None):
+def _make_divisible(v, divisor, min_value=None, floor=False):
+  if floor:
+    return math.floor(v)
   if min_value is None:
     min_value = divisor
   new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
@@ -98,12 +101,13 @@ def depth_multiplier(output_params,
                      multiplier,
                      divisible_by=8,
                      min_depth=8,
+                     floor=False,
                      **unused_kwargs):
   if 'num_outputs' not in output_params:
     return
   d = output_params['num_outputs']
   output_params['num_outputs'] = _make_divisible(d * multiplier, divisible_by,
-                                                 min_depth)
+                                                 min_depth, floor=floor)
 
 
 _Op = collections.namedtuple('Op', ['op', 'params', 'multiplier_func'])
